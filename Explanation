@@ -1,0 +1,6 @@
+ScheduleManager: Manages the list of tasks ensuring only one instance exists.
+TaskFactory: Creates and validates Task objects based on provided parameters.
+TaskObserver: Interface for objects that need to be notified of task updates or conflicts.
+TaskConflictObserver: Implements TaskObserver to handle conflict notifications.
+Task: Represents a task with a description, time, priority, and potentially sub-tasks.
+Main: Entry point of the application to demonstrate the creation, addition, and viewing of tasks
