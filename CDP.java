@@ -1,3 +1,4 @@
+// ScheduleManager.java
 public class ScheduleManager {
     private static ScheduleManager instance;
     private List<Task> tasks;
@@ -20,12 +21,10 @@ public class ScheduleManager {
             }
         }
         tasks.add(task);
-        // Notify observers about the new task
     }
 
     public void removeTask(String description) {
         tasks.removeIf(t -> t.getDescription().equals(description));
-        // Notify observers about the removal
     }
 
     public List<Task> viewTasks() {
@@ -33,13 +32,11 @@ public class ScheduleManager {
                 .sorted(Comparator.comparing(Task::getStartTime))
                 .collect(Collectors.toList());
     }
-
-    // Other methods like editTask, markTaskAsCompleted, etc.
 }
 
+// TaskFactory.java
 public class TaskFactory {
     public static Task createTask(String description, String startTime, String endTime, String priority) throws InvalidTimeException {
-        // Validate time format and create Task
         if (!isValidTime(startTime) || !isValidTime(endTime)) {
             throw new InvalidTimeException("Invalid time format");
         }
@@ -51,4 +48,3 @@ public class TaskFactory {
         return true;
     }
 }
-
