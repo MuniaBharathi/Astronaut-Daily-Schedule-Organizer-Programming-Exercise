@@ -1,7 +1,9 @@
+// TaskObserver.java
 public interface TaskObserver {
     void update(String message);
 }
 
+// TaskConflictObserver.java
 public class TaskConflictObserver implements TaskObserver {
     @Override
     public void update(String message) {
@@ -9,42 +11,62 @@ public class TaskConflictObserver implements TaskObserver {
     }
 }
 
-public interface TaskCommand {
-    void execute();
-}
+// ScheduleManager.java
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class AddTaskCommand implements TaskCommand {
-    private ScheduleManager manager;
-    private Task task;
+public class ScheduleManager {
+    private static ScheduleManager instance;
+    private List<Task> tasks;
+    private List<TaskObserver> observers;
 
-    public AddTaskCommand(ScheduleManager manager, Task task) {
-        this.manager = manager;
-        this.task = task;
+    private ScheduleManager() {
+        tasks = new ArrayList<>();
+        observers = new ArrayList<>();
     }
 
-    @Override
-    public void execute() {
-        try {
-            manager.addTask(task);
-            System.out.println("Task added successfully.");
-        } catch (TaskConflictException e) {
-            System.out.println(e.getMessage());
+    public static ScheduleManager getInstance() {
+        if (instance == null) {
+            instance = new ScheduleManager();
+        }
+        return instance;
+    }
+
+    public void addObserver(TaskObserver observer) {
+        observers.add(observer);
+    }
+
+    public void removeObserver(TaskObserver observer) {
+        observers.remove(observer);
+    }
+
+    private void notifyObservers(String message) {
+        for (TaskObserver observer : observers) {
+            observer.update(message);
         }
     }
-}
 
-public class RemoveTaskCommand implements TaskCommand {
-    private ScheduleManager manager;
-    private String description;
-
-    public RemoveTaskCommand(ScheduleManager manager, String description) {
-        this.manager = manager;
-        this.description = description;
+    public void addTask(Task task) throws TaskConflictException {
+        for (Task t : tasks) {
+            if (t.conflictsWith(task)) {
+                notifyObservers("Task conflicts with existing task: " + t.getDescription());
+                throw new TaskConflictException("Task conflicts with existing task: " + t.getDescription());
+            }
+        }
+        tasks.add(task);
+        notifyObservers("Task added: " + task.getDescription());
     }
 
-    @Override
-    public void execute() {
-        manager.removeTask(description);
-        System.out.println("Task removed successfully.");
+    public void removeTask(String description) {
+        tasks.removeIf(t -> t.getDescription().equals(description));
+        notifyObservers("Task removed: " + description);
+    }
+
+    public List<Task> viewTasks() {
+        return tasks.stream()
+                .sorted(Comparator.comparing(Task::getStartTime))
+                .collect(Collectors.toList());
     }
 }
